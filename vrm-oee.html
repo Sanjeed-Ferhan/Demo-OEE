@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRM OEE · Production Entry</title>
+<style>
+  :root{
+    --navy:#0f2b46; --navy2:#16456e; --blue:#2e86c1; --teal:#17a589; --orange:#e67e22;
+    --red:#c0392b; --green:#1e8449; --purple:#8e44ad; --grey:#7f8c8d;
+    --line:#e2e8ef; --bg:#eef1f5; --card:#fff; --ink:#1f2a33; --muted:#6b7783;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+  button,input,select,textarea{font-family:inherit;font-size:14px}
+  .topbar{background:var(--navy);color:#fff;padding:11px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:30}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+  .brand .mk{width:34px;height:34px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.5px}
+  .brand small{display:block;font-weight:400;color:#b9cee0;font-size:11px}
+  .topbar .spacer{flex:1}
+  .topbar .plant{background:#1b3f61;border-radius:8px;padding:6px 12px;font-size:13px}
+  .who{display:flex;align-items:center;gap:9px;font-size:13px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  .nav{background:#fff;border-bottom:1px solid var(--line);display:flex;gap:2px;padding:0 14px;overflow-x:auto}
+  .nav button{background:none;border:none;padding:13px 16px;cursor:pointer;color:var(--muted);font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+  .nav button.active{color:var(--navy);border-bottom-color:var(--navy)}
+  .wrap{padding:20px;max-width:1400px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:18px;margin-bottom:16px}
+  .card h2{margin:0 0 4px;font-size:16px;color:var(--navy)}
+  .card .desc{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  .sec-title{font-size:13px;font-weight:700;color:var(--navy);margin:18px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--line);text-transform:uppercase;letter-spacing:.4px}
+  .sec-title:first-child{margin-top:0}
+  .grid{display:grid;gap:14px}
+  .g4{grid-template-columns:repeat(4,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:1000px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:680px){.g4,.g3,.g2{grid-template-columns:1fr}}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:11px;padding:15px}
+  .kpi .v{font-size:26px;font-weight:700;color:var(--navy);line-height:1.1}
+  .kpi .l{font-size:11px;color:var(--muted);letter-spacing:.5px;margin-top:5px;text-transform:uppercase;font-weight:600}
+  .kpi .s{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 16px;cursor:pointer;font-weight:600}
+  .btn:hover{background:var(--navy2)}
+  .btn.sm{padding:5px 10px;font-size:12.5px}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid #c7d9ea}
+  .btn.ghost:hover{background:#f0f6fc}
+  .btn.green{background:var(--teal)}.btn.green:hover{background:#128f76}
+  .btn.red{background:var(--red)}.btn.red:hover{background:#a5311f}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+  .field label{font-size:12px;font-weight:600;color:var(--muted)}
+  .field label .req{color:var(--red)}
+  .field input,.field select,.field textarea{padding:9px 10px;border:1px solid #cfd8e2;border-radius:8px;background:#fff;width:100%}
+  .field input:read-only{background:#f3f6f9;color:#546e7a}
+  .field input[type=number]{text-align:right}
+  .inputgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .inputgrid.npt{grid-template-columns:repeat(5,1fr)}
+  @media(max-width:1100px){.inputgrid{grid-template-columns:repeat(2,1fr)}.inputgrid.npt{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.inputgrid,.inputgrid.npt{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{background:var(--navy);color:#fff;text-align:left;padding:8px 9px;font-weight:600;white-space:nowrap;position:sticky;top:0}
+  td{border-bottom:1px solid var(--line);padding:8px 9px;vertical-align:top;white-space:nowrap}
+  tr:nth-child(even) td{background:#fafcfe}
+  .tw{width:100%;overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:8px}
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+  .b-grey{background:#e6eaee;color:#546e7a}.b-blue{background:#e3f0fa;color:#1c6ea4}
+  .b-orange{background:#fdf0e2;color:#b06012}.b-red{background:#fdeaea;color:#a5311f}
+  .b-green{background:#e0f7ea;color:#1E8449}.b-teal{background:#dcf5e6;color:#145A32}
+  .b-purple{background:#f2e9f9;color:#6d33a3}
+  .muted{color:var(--muted)}.small{font-size:12px}
+  .bar{height:18px;border-radius:5px;background:#e8edf3;overflow:hidden}.bar>i{display:block;height:100%}
+  .toast{position:fixed;right:18px;bottom:18px;background:#12304a;color:#fff;padding:12px 16px;border-radius:9px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:340px}
+  .empty{padding:24px;text-align:center;color:var(--muted)}
+  .bk-row{display:grid;grid-template-columns:170px 1fr 1fr 100px 1fr 38px;gap:8px;margin-bottom:8px;align-items:center}
+  @media(max-width:900px){.bk-row{grid-template-columns:1fr 1fr;}}
+  .pill{display:inline-block;background:#eef3f8;border-radius:6px;padding:2px 8px;font-size:11.5px;margin:2px 4px 2px 0;color:#40515f}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+  .legend span{display:flex;align-items:center;gap:6px}.dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .formula{background:#f7fafd;border:1px dashed #c7d9ea;border-radius:8px;padding:10px 12px;font-size:12px;color:#40515f;margin:6px 0 14px}
+  @media(max-width:760px){.wrap{padding:13px 11px}.card{padding:13px}input,select,textarea{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="nav" id="nav"></div>
+<div id="app"></div>
+<div id="toast"></div>
+
+<script>
+/* ==========================================================================
+   VRM OEE — Production Entry / Report / Breakdown
+   Data stored in this browser (localStorage). Input Sheet drives the
+   Production Report and VRM Breakdown. OEE = Availability x Performance x Quality
+   ========================================================================== */
+const SBU='DEMO';
+const MILLS={ 'Machine-01':{speed:135}, 'Machine-02':{speed:210} };      /* standard feed rate MT/hr */
+const PRODUCTS=['PCC','OPC','PPC'];
+const SHIFT_NAMES=['A','B','C'];
+const SHIFT_CATS=['A','B','C'];
+const WASTAGE_REASONS=['Moisture Loss & Process Loss','Others'];
+const NPT_CATS=[
+  'Unavailable Order','In Process Setup/ Adjustment','Utility (Gas)','Utility (Electricity)',
+  'Raw Material Shortage','Manpower Shortage','QCO(Quick cahnge over)','Warehouse block',
+  'Mechanical Breakdown','Electrical Breakdown','Others down time'
+];
+const BREAKDOWN_TYPES=['Mechanical Breakdown','Electrical Breakdown','Raw Material Shortage',
+  'Warehouse block','Utility (Electricity)','In Process Setup/ Adjustment','Others down time'];
+const BTYPE_TO_NPT={
+  'Mechanical Breakdown':'Mechanical Breakdown','Electrical Breakdown':'Electrical Breakdown',
+  'Raw Material Shortage':'Raw Material Shortage','Warehouse block':'Warehouse block',
+  'Utility (Electricity)':'Utility (Electricity)','In Process Setup/ Adjustment':'In Process Setup/ Adjustment',
+  'Others down time':'Others down time'
+};
+const SUPERVISORS={
+  'A|Machine-01':'R. Karim','A|Machine-02':'R. Karim',
+  'B|Machine-01':'S. Ahmed','B|Machine-02':'S. Ahmed',
+  'C|Machine-01':'M. Hossain','C|Machine-02':'M. Hossain'
+};
+const OPERATORS={
+  'A|Machine-01':'J. Uddin','A|Machine-02':'N. Islam',
+  'B|Machine-01':'F. Alam','B|Machine-02':'A. Sarker',
+  'C|Machine-01':'T. Hasan','C|Machine-02':'S. Mia'
+};
+const BREAKDOWN_NAMES=[
+  'Mill Feed Conveyor','Clinker Conveyor','Bucket Elevator','Bag Filter Fan','Main Bag House',
+  'Weigh Feeder','High Pressure Fan','ID Fan','Classifier / Separator','Rotary Feeder','Air Slide',
+  'Compressor','Main Motor','Gearbox','Roller Press','Hydraulic Unit','Hoist','Silo Discharge',
+  'PLC Panel','Power Feeder','Lubrication Unit','Cooling Fan','Dust Collector'
+];
+const BREAKDOWN_REASONS=[
+  'Low feed rate','Overload alarm','Motor change','Belt misalignment','Bearing failure','High vibration',
+  'High temperature','Oil leak','Lubrication failure','Filter DP high','Trip','Not ready','Not healthy',
+  'Sensor fault','Coupling damage','Chain lock','Electrical fault','Mechanical wear','Wear part replacement','Process hold'
+];
+
+/* ------------------------------- helpers -------------------------------- */
+const $=id=>document.getElementById(id);
+function uid(p){return p+Date.now().toString(36)+Math.floor(Math.random()*1000);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function todayStr(){const d=new Date();const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function fmt(d){if(!d)return'—';const x=new Date(d+'T00:00:00');return x.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function num(x,d){x=+x;if(!isFinite(x))return (0).toFixed(d||0);return x.toFixed(d||0);}
+function pct(x,d){return (x*100).toFixed(d==null?1:d)+'%';}
+function monthOf(d){const x=new Date(d+'T00:00:00');return x.toLocaleDateString('en-GB',{month:'short'})+'-'+String(x.getFullYear()).slice(2);}
+function yearOf(d){return new Date(d+'T00:00:00').getFullYear();}
+function badge(x,cls){return `<span class="badge ${cls}">${esc(x)}</span>`;}
+function toast(m){$('toast').innerHTML=`<div class="toast">${esc(m)}</div>`;setTimeout(()=>$('toast').innerHTML='',3200);}
+
+/* ------------------------------- data ----------------------------------- */
+function blankDB(){return {production:[],breakdowns:[],seq:{p:1,b:1},settings:{}};}
+let DB, view='input';
+function seed(){
+  const SHIFTCAT={'A':'A','B':'B','C':'C'};
+  const samples=[
+    {date:'2024-11-16',shiftName:'A',mill:'Machine-01',product:'PCC',output:918.045,opTime:480,planned:0,npt:{'Others down time':60},target:1067},
+    {date:'2024-11-16',shiftName:'A',mill:'Machine-02',product:'PCC',output:1326.87,opTime:480,planned:0,npt:{},target:1684},
+    {date:'2024-11-16',shiftName:'A',mill:'Machine-02',product:'OPC',output:194.58,opTime:60,planned:0,npt:{},target:211},
+    {date:'2024-11-16',shiftName:'B',mill:'Machine-01',product:'PCC',output:713.115,opTime:480,planned:0,npt:{'Mechanical Breakdown':360,'Others down time':20},target:1067},
+    {date:'2024-11-16',shiftName:'C',mill:'Machine-02',product:'OPC',output:320.85,opTime:100,planned:0,npt:{},target:351},
+    {date:'2024-11-17',shiftName:'C',mill:'Machine-02',product:'PCC',output:978.075,opTime:270,planned:0,npt:{},target:947},
+    {date:'2024-11-17',shiftName:'A',mill:'Machine-02',product:'PCC',output:1513.17,opTime:480,planned:0,npt:{'Mechanical Breakdown':35,'Others down time':70},target:1684},
+    {date:'2024-11-18',shiftName:'A',mill:'Machine-02',product:'PCC',output:1718.1,opTime:480,planned:0,npt:{},target:1684},
+    {date:'2024-11-18',shiftName:'C',mill:'Machine-02',product:'PCC',output:1231.65,opTime:360,planned:0,npt:{'Mechanical Breakdown':40},target:1263},
+    {date:'2024-11-19',shiftName:'A',mill:'Machine-01',product:'PCC',output:910.8,opTime:480,planned:0,npt:{'Electrical Breakdown':60,'Others down time':40},target:1067},
+    {date:'2024-11-20',shiftName:'C',mill:'Machine-02',product:'PCC',output:1402.5,opTime:480,planned:0,npt:{},target:1684},
+    {date:'2024-11-22',shiftName:'B',mill:'Machine-01',product:'PCC',output:686.205,opTime:360,planned:0,npt:{},target:800}
+  ];
+  const production=[];
+  samples.forEach(s=>{
+    const e={ id:uid('p'), date:s.date, shiftName:s.shiftName, shiftCat:SHIFTCAT[s.shiftName]||'A', mill:s.mill,
+      product:s.product, output:s.output, opTime:s.opTime, plannedDT:s.planned||0, target:s.target||0,
+      wastageTarget:3.4, wastageReason:'Moisture Loss & Process Loss', remarks:'', npt:s.npt||{}, breakdowns:[] };
+    production.push(computeRow(e));
+  });
+  const brkSeed=[
+    ['2024-11-16','B','Machine-01','PCC','Mechanical Breakdown','High Pressure Fan','High vibration',360,''],
+    ['2024-11-16','A','Machine-01','PCC','Others down time','Mill Monitoring','Low feed rate',60,''],
+    ['2024-11-17','A','Machine-02','PCC','Mechanical Breakdown','Clinker Conveyor','Belt misalignment',35,''],
+    ['2024-11-17','A','Machine-02','PCC','Others down time','Mill Monitoring','Motor change',70,''],
+    ['2024-11-18','C','Machine-02','PCC','Mechanical Breakdown','Gearbox','Bearing failure',40,''],
+    ['2024-11-19','A','Machine-01','PCC','Electrical Breakdown','Power Feeder','Trip',60,''],
+    ['2024-11-19','A','Machine-01','PCC','Others down time','Mill Monitoring','Process hold',40,'']
+  ];
+  const breakdowns=brkSeed.map(b=>({id:uid('b'),date:b[0],shiftName:b[1],mill:b[2],product:b[3],type:b[4],name:b[5],reason:b[6],downtime:+b[7],remarks:b[8]}));
+  return {production:production,breakdowns:breakdowns,seq:{p:production.length+1,b:breakdowns.length+1},settings:{wastageTarget:3.4}};
+}
+function load(){ try{const raw=localStorage.getItem('vrm_oee_v1');DB=raw?JSON.parse(raw):seed();}catch(e){DB=seed();}
+  if(!Array.isArray(DB.production))DB.production=[]; if(!Array.isArray(DB.breakdowns))DB.breakdowns=[]; if(!DB.seq)DB.seq={p:1,b:1}; }
+function save(){ try{localStorage.setItem('vrm_oee_v1',JSON.stringify(DB));}catch(e){} }
+function resetDemo(){ if(confirm('Reset all data back to the demo dataset?')){DB=seed();save();render();toast('Demo data restored.');} }
+
+/* ---------------------------- OEE computation --------------------------- */
+function nptTotal(npt){ let t=0; NPT_CATS.forEach(c=>t+=(+npt[c]||0)); return t; }
+function computeRow(e){
+  const speed=(MILLS[e.mill]||{}).speed||135;
+  const opTime=+e.opTime||0;
+  const plannedDT=+e.plannedDT||0;
+  const availableRun=Math.max(0,opTime-plannedDT);
+  /* NPT = entered categories + breakdown downtime grouped by type */
+  const npt={}; NPT_CATS.forEach(c=>npt[c]=+ (e.npt&&e.npt[c])||0);
+  (e.breakdowns||[]).forEach(b=>{ const col=BTYPE_TO_NPT[b.type]; if(col)npt[col]=(npt[col]||0)+(+b.downtime||0); });
+  const totalNPT=nptTotal(npt);
+  const actualRun=Math.max(0,availableRun-totalNPT);
+  const output=+e.output||0;
+  const capacity=speed*opTime/60;
+  const idealCycle=speed>0?60/speed:0;
+  const target=+e.target||capacity;
+  const wastTarget=(+e.wastageTarget||0)/100;
+  const wastage=output*wastTarget;
+  const good=output-wastage;
+  const availability=availableRun>0?actualRun/availableRun:0;
+  const performance=target>0?output/target:0;
+  const quality=output>0?good/output:0;
+  const oee=availability*performance*quality;
+  const achievement=target>0?good/target:0;
+  const actualSpeed=actualRun>0?output/(actualRun/60):0;
+  const speedGap=speed-actualSpeed;
+  const gapPct=speed>0?speedGap/speed:0;
+  const nptPct=opTime>0?totalNPT/opTime:0;
+  const wastagePct=output>0?wastage/output:0;
+  return Object.assign({},e,{
+    id:e.id||uid('p'), sbu:SBU, supervisor:SUPERVISORS[e.shiftName+'|'+e.mill]||'',
+    operator:e.operator||OPERATORS[e.shiftName+'|'+e.mill]||'',
+    shift:e.shiftCat||'', capacity:capacity, target:target, idealCycle:idealCycle,
+    actualSpeed:actualSpeed, speedGap:speedGap, gapPct:gapPct,
+    availableRun:availableRun, totalNPT:totalNPT, actualRun:actualRun, npt:npt,
+    nptPct:nptPct, wastage:wastage, wastagePct:wastagePct, good:good,
+    availability:availability, performance:performance, quality:quality, oee:oee, achievement:achievement,
+    month:monthOf(e.date), year:yearOf(e.date)
+  });
+}
+
+/* ------------------------------- shell ---------------------------------- */
+const TABS=[['input','Input Sheet'],['production','Production Report'],['breakdowns','VRM Breakdown'],['dashboard','Dashboard']];
+function render(){
+  $('topbar').innerHTML=`
+    <div class="brand"><div class="mk">VRM</div><div>OEE Management<small>Production Entry · Report · Breakdown</small></div></div>
+    <div class="spacer"></div>
+    <div class="plant">Demo Cement Plant</div>
+    <div class="who"><div class="avatar">DU</div><div>Demo User</div></div>
+    <button class="btn ghost sm" onclick="resetDemo()">Reset demo</button>`;
+  $('nav').innerHTML=TABS.map(([k,l])=>`<button class="${view===k?'active':''}" onclick="go('${k}')">${l}</button>`).join('');
+  const body={input:inputSheetView,production:productionReportView,breakdowns:breakdownView,dashboard:dashboardView}[view]();
+  $('app').innerHTML='<div class="wrap">'+body+'</div>';
+}
+function go(v){view=v;render();}
+
+/* ----------------------------- input sheet ------------------------------ */
+let bkRows=[];
+function inputSheetView(){
+  const millOpts=Object.keys(MILLS).map(m=>`<option>${m}</option>`).join('');
+  const nptInputs=NPT_CATS.map(c=>`<div class="field"><label>${esc(c)} <span class="muted">(min)</span></label>
+      <input type="number" min="0" id="npt_${c.replace(/[^a-z0-9]/gi,'_')}" value="0"></div>`).join('');
+  return `
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div><h2>Production Entry (OEE) — Input Sheet</h2><p class="desc">Enter shift production, NPT / wastage and breakdown data. Saving generates the Production Report row and the VRM Breakdown records.</p></div>
+      <div><button class="btn ghost" onclick="clearForm()">Clear</button> <button class="btn green" onclick="saveEntry()">Save Entry</button></div>
+    </div>
+
+    <div class="sec-title">Basic Information</div>
+    <div class="inputgrid">
+      <div class="field"><label>Production Date <span class="req">*</span></label><input type="date" id="i_date" value="${todayStr()}"></div>
+      <div class="field"><label>Mill Name <span class="req">*</span></label><select id="i_mill" onchange="autoFill()">${millOpts}</select></div>
+      <div class="field"><label>Product Criteria <span class="req">*</span></label><select id="i_product">${PRODUCTS.map(p=>`<option>${p}</option>`).join('')}</select></div>
+      <div class="field"><label>Shift <span class="req">*</span></label><select id="i_shiftName" onchange="autoFill()">${SHIFT_NAMES.map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Operator Name <span class="req">*</span></label><input id="i_operator" placeholder="auto-fills with shift + mill"></div>
+      <div class="field"><label>Supervisor Name</label><input id="i_supervisor" readonly></div>
+      <div class="field"><label>Standard Speed (MT/hr)</label><input id="i_speed" readonly></div>
+    </div>
+
+    <div class="sec-title">Production Information</div>
+    <div class="inputgrid">
+      <div class="field"><label>Actual Output (MT) <span class="req">*</span></label><input type="number" step="0.001" id="i_output" value="0"></div>
+      <div class="field"><label>Operation / Shift Time (Min) <span class="req">*</span></label><input type="number" id="i_opTime" value="480" oninput="calcPreview()"></div>
+      <div class="field"><label>Planned Down Time (Min)</label><input type="number" id="i_planned" value="0" oninput="calcPreview()"></div>
+      <div class="field"><label>Shift Target (MT)</label><input type="number" step="0.001" id="i_target" placeholder="defaults to capacity"></div>
+    </div>
+
+    <div class="sec-title">NPT &amp; Wastage Entry</div>
+    <div class="inputgrid npt">${nptInputs}</div>
+    <div class="inputgrid" style="margin-top:6px">
+      <div class="field"><label>Wastage Target (%)</label><input type="number" step="0.001" id="i_wastageTarget" value="3.4"></div>
+      <div class="field"><label>Wastage Reason</label><select id="i_wastageReason">${WASTAGE_REASONS.map(w=>`<option>${w}</option>`).join('')}</select></div>
+      <div class="field" style="grid-column:span 2"><label>Others / Remarks</label><input id="i_remarks"></div>
+    </div>
+
+    <div class="formula" id="preview"></div>
+
+    <div class="sec-title">Breakdown Data Entry</div>
+    <p class="desc" style="margin-top:-4px">Add breakdown rows. Downtime is grouped into the matching NPT category on the Production Report.</p>
+    <div class="bk-row small muted" style="font-weight:600"><div>Breakdown Type</div><div>Breakdown Name</div><div>Reason</div><div>Downtime (min)</div><div>Remarks</div><div></div></div>
+    <div id="bkRows"></div>
+    <button class="btn ghost sm" onclick="addBkRow()">+ Add breakdown row</button>
+  </div>`;
+}
+function autoFill(){
+  const key=$('i_shiftName').value+'|'+$('i_mill').value;
+  $('i_operator').value=$('i_operator').value||OPERATORS[key]||'';
+  $('i_supervisor').value=SUPERVISORS[key]||'';
+  $('i_speed').value=(MILLS[$('i_mill').value]||{}).speed||'';
+  calcPreview();
+}
+function clearForm(){
+  document.querySelectorAll('#app input[type=number]').forEach(i=>i.value=i.id==='i_opTime'?480:0);
+  $('i_date').value=todayStr();$('i_operator').value='';bkRows=[];renderBkRows();calcPreview();
+}
+function calcPreview(){
+  const P=(v,d)=>num(v,d);
+  const speed=(MILLS[$('i_mill')?$('i_mill').value:'Machine-01']||{}).speed||135;
+  const op=+$('i_opTime').value||0, planned=+$('i_planned').value||0;
+  const avail=Math.max(0,op-planned);
+  let npt=0; NPT_CATS.forEach(c=>{ const el=$('npt_'+c.replace(/[^a-z0-9]/gi,'_')); if(el)npt+=+el.value||0; });
+  bkRows.forEach(b=>{ if(BTYPE_TO_NPT[b.type])npt+=(+b.downtime||0); });
+  const actual=Math.max(0,avail-npt);
+  const cap=P(speed*op/60,1);
+  const el=$('preview');
+  if(el) el.innerHTML=`<b>Live preview:</b> Standard speed <b>${speed}</b> MT/hr &nbsp;·&nbsp; Shift capacity <b>${cap}</b> MT &nbsp;·&nbsp;
+    Available run time <b>${avail}</b> min &nbsp;·&nbsp; Total NPT <b>${npt}</b> min &nbsp;·&nbsp; Actual run time <b>${actual}</b> min &nbsp;·&nbsp;
+    NPT% <b>${op?((npt/op*100).toFixed(1)):0}%</b>`;
+}
+function addBkRow(){
+  bkRows.push({type:BREAKDOWN_TYPES[0],name:'',reason:'',downtime:0,remarks:''});
+  renderBkRows();
+}
+function delBkRow(i){ bkRows.splice(i,1); renderBkRows(); }
+function onBk(i,k,v){ bkRows[i][k]=v; calcPreview(); }
+function renderBkRows(){
+  const c=$('bkRows'); if(!c)return;
+  c.innerHTML=bkRows.map((b,i)=>`<div class="bk-row">
+    <select onchange="onBk(${i},'type',this.value)">${BREAKDOWN_TYPES.map(t=>`<option ${b.type===t?'selected':''}>${t}</option>`).join('')}</select>
+    <input list="bkNames" value="${esc(b.name)}" oninput="onBk(${i},'name',this.value)" placeholder="Equipment / breakdown name">
+    <input list="bkReasons" value="${esc(b.reason)}" oninput="onBk(${i},'reason',this.value)" placeholder="Reason">
+    <input type="number" min="0" value="${b.downtime}" oninput="onBk(${i},'downtime',this.value)">
+    <input value="${esc(b.remarks)}" oninput="onBk(${i},'remarks',this.value)" placeholder="Remarks">
+    <button class="btn red sm" onclick="delBkRow(${i})">×</button></div>`).join('') +
+    `<datalist id="bkNames">${BREAKDOWN_NAMES.map(n=>`<option>${esc(n)}</option>`).join('')}</datalist>
+     <datalist id="bkReasons">${BREAKDOWN_REASONS.map(n=>`<option>${esc(n)}</option>`).join('')}</datalist>`;
+}
+function saveEntry(){
+  const date=$('i_date').value, mill=$('i_mill').value, product=$('i_product').value, shift=$('i_shiftName').value;
+  const output=+$('i_output').value||0;
+  if(!date||!output){ toast('Date and Actual Output are required.'); return; }
+  const operator=$('i_operator').value||OPERATORS[shift+'|'+mill]||'';
+  const npt={}; NPT_CATS.forEach(c=>{ const el=$('npt_'+c.replace(/[^a-z0-9]/gi,'_')); npt[c]=+el.value||0; });
+  const validBk=bkRows.filter(b=>(+b.downtime||0)>0);
+  const entry={ id:uid('p'), date, mill, product, shiftName:shift, shiftCat:shift, operator,
+    output, opTime:+$('i_opTime').value||0, plannedDT:+$('i_planned').value||0, target:+$('i_target').value||0,
+    wastageTarget:+$('i_wastageTarget').value||0, wastageReason:$('i_wastageReason').value, remarks:$('i_remarks').value, npt, breakdowns:validBk };
+  DB.production.unshift(computeRow(entry));
+  validBk.forEach(b=>DB.breakdowns.unshift({id:uid('b'),date,shiftName:shift,mill,product,type:b.type,name:b.name,reason:b.reason,downtime:+b.downtime||0,remarks:b.remarks}));
+  save();
+  toast('Saved. Production Report row and '+validBk.length+' breakdown record(s) generated.');
+  bkRows=[]; view='production'; render();
+}
+
+/* --------------------------- production report -------------------------- */
+let prFilter={mill:'All',shift:'All',month:'All'};
+function productionReportView(){
+  let rows=DB.production.slice();
+  const mills=['All'].concat(Object.keys(MILLS));
+  if(prFilter.mill!=='All')rows=rows.filter(r=>r.mill===prFilter.mill);
+  if(prFilter.shift!=='All')rows=rows.filter(r=>r.shiftName===prFilter.shift);
+  if(prFilter.month!=='All')rows=rows.filter(r=>r.month===prFilter.month);
+  rows.sort((a,b)=>b.date.localeCompare(a.date));
+  const avg=k=>rows.length?rows.reduce((s,r)=>s+(+r[k]||0),0)/rows.length:0;
+  const nptCols=NPT_CATS.map(c=>`<th>${esc(c)}</th>`).join('');
+  const body=rows.map(r=>{
+    const cells=NPT_CATS.map(c=>`<td>${r.npt[c]?num(r.npt[c],0):'0'}</td>`).join('');
+    return `<tr>
+      <td>${esc(r.sbu)}</td><td>${fmt(r.date)}</td><td>${esc(r.shiftName)}</td><td><b>${esc(r.mill)}</b></td>
+      <td>${badge(r.product,'b-blue')}</td><td>${esc(r.operator)}</td><td>${esc(r.supervisor)}</td><td>${esc(r.shift)}</td>
+      <td>${num(r.capacity,0)}</td><td>${num(r.target,0)}</td><td>${num(r.output,2)}</td><td>${num(r.idealCycle,3)}</td>
+      <td>${pct(r.achievement,2)}</td><td>${num((MILLS[r.mill]||{}).speed,0)}</td><td>${num(r.actualSpeed,0)}</td>
+      <td>${num(r.speedGap,0)}</td><td>${pct(r.gapPct,2)}</td><td>${num(r.opTime,0)}</td><td>${num(r.plannedDT,0)}</td>
+      <td>${num(r.availableRun,0)}</td><td>${num(r.totalNPT,0)}</td><td>${num(r.actualRun,0)}</td>
+      ${cells}
+      <td>${pct(r.nptPct,2)}</td><td>${num(r.wastageTarget,1)}%</td><td>${num(r.wastage,2)}</td><td>${pct(r.wastagePct,3)}</td>
+      <td>${esc(r.wastageReason)}</td><td>${num(r.good,2)}</td>
+      <td>${pct(r.availability,0)}</td><td>${pct(r.performance,0)}</td><td>${pct(r.quality,0)}</td>
+      <td><b style="color:${r.oee>=0.75?'#1E8449':r.oee>=0.5?'#E67E22':'#C0392B'}">${pct(r.oee,2)}</b></td>
+      <td>${esc(r.remarks)}</td></tr>`;
+  }).join('');
+  return `
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="kpi"><div class="v">${rows.length}</div><div class="l">Shift Records</div></div>
+    <div class="kpi"><div class="v" style="color:#2E86C1">${pct(avg('availability'),1)}</div><div class="l">Avg Availability</div></div>
+    <div class="kpi"><div class="v" style="color:#17A589">${pct(avg('performance'),1)}</div><div class="l">Avg Performance</div></div>
+    <div class="kpi"><div class="v" style="color:${avg('oee')>=.75?'#1E8449':'#E67E22'}">${pct(avg('oee'),2)}</div><div class="l">Avg OEE</div></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div><h2>Production Report</h2><p class="desc">Generated from the Input Sheet. OEE = Availability × Performance × Quality.</p></div>
+      <div><button class="btn ghost" onclick="exportCSV('production')">Export CSV</button> <button class="btn" onclick="go('input')">+ New Entry</button></div>
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <div class="field" style="min-width:150px;margin:0"><label>Mill</label><select onchange="prFilter.mill=this.value;render()">${mills.map(m=>`<option ${prFilter.mill===m?'selected':''}>${m}</option>`).join('')}</select></div>
+      <div class="field" style="min-width:170px;margin:0"><label>Shift Name</label><select onchange="prFilter.shift=this.value;render()"><option>All</option>${SHIFT_NAMES.map(s=>`<option ${prFilter.shift===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field" style="min-width:140px;margin:0"><label>Month</label><select onchange="prFilter.month=this.value;render()"><option>All</option>${[...new Set(DB.production.map(r=>r.month))].map(m=>`<option ${prFilter.month===m?'selected':''}>${m}</option>`).join('')}</select></div>
+    </div>
+    <div class="tw"><table><thead><tr>
+      <th>SBU</th><th>Date</th><th>Shift Name</th><th>Mill</th><th>Product</th><th>Operator</th><th>Supervisor</th><th>Shift</th>
+      <th>Capacity (MT)</th><th>Target (MT)</th><th>Actual Output</th><th>Ideal Cycle</th><th>Achievement %</th><th>Std Speed</th><th>Actual Speed</th>
+      <th>Speed Gap</th><th>Gap %</th><th>Op Time</th><th>Planned DT</th><th>Avail Run</th><th>Total NPT</th><th>Actual Run</th>
+      ${nptCols}
+      <th>NPT%</th><th>Wastage Tgt%</th><th>Wastage MT</th><th>Wastage%</th><th>Wastage Reason</th><th>Good Prod</th>
+      <th>Availability%</th><th>Performance%</th><th>Quality%</th><th>OEE%</th><th>Remarks</th>
+    </tr></thead><tbody>${body||'<tr><td colspan="40" class="empty">No records. Enter data on the Input Sheet.</td></tr>'}</tbody></table></div>
+  </div>`;
+}
+
+/* ----------------------------- breakdowns ------------------------------- */
+let bdFilter={mill:'All',type:'All'};
+function breakdownView(){
+  let rows=DB.breakdowns.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(bdFilter.mill!=='All')rows=rows.filter(r=>r.mill===bdFilter.mill);
+  if(bdFilter.type!=='All')rows=rows.filter(r=>r.type===bdFilter.type);
+  const totalMins=rows.reduce((s,r)=>s+(+r.downtime||0),0);
+  const byType={}; rows.forEach(r=>byType[r.type]=(byType[r.type]||0)+(+r.downtime||0));
+  const body=rows.map(r=>`<tr>
+    <td>${esc(r.sbu||SBU)}</td><td>${fmt(r.date)}</td><td>${esc(r.shiftName)}</td><td><b>${esc(r.mill)}</b></td>
+    <td>${badge(r.product,'b-blue')}</td><td>${esc(r.operator||'')}</td><td>${esc(r.supervisor||SUPERVISORS[r.shiftName+'|'+r.mill]||'')}</td>
+    <td>${esc(r.type)}</td><td>${esc(r.name)}</td><td>${esc(r.reason)}</td><td><b>${num(r.downtime,0)}</b></td>
+    <td>${esc(r.remarks||'')}</td><td>${esc(r.month||monthOf(r.date))}</td><td>${r.year||yearOf(r.date)}</td></tr>`).join('');
+  return `
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="kpi"><div class="v">${rows.length}</div><div class="l">Breakdown Events</div></div>
+    <div class="kpi"><div class="v" style="color:#C0392B">${num(totalMins/60,1)} h</div><div class="l">Total Downtime</div></div>
+    <div class="kpi"><div class="v">${rows.length?num(totalMins/rows.length,0):0} min</div><div class="l">Avg per Event</div></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><div><h2>VRM Breakdown</h2>
+      <p class="desc">Created automatically from the Input Sheet breakdown entries and rolled up into the Production Report NPT.</p></div>
+      <button class="btn ghost" onclick="exportCSV('breakdowns')">Export CSV</button></div>
+    <div class="row" style="margin-bottom:10px">
+      <div class="field" style="min-width:150px;margin:0"><label>Mill</label><select onchange="bdFilter.mill=this.value;render()"><option>All</option>${Object.keys(MILLS).map(m=>`<option ${bdFilter.mill===m?'selected':''}>${m}</option>`).join('')}</select></div>
+      <div class="field" style="min-width:220px;margin:0"><label>Breakdown Type</label><select onchange="bdFilter.type=this.value;render()"><option>All</option>${BREAKDOWN_TYPES.map(t=>`<option ${bdFilter.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    </div>
+    <div class="legend">${Object.keys(byType).map(t=>`<span>● ${esc(t)}: <b>${num(byType[t],0)} min</b></span>`).join('')||''}</div>
+    <div class="tw" style="margin-top:10px"><table><thead><tr>
+      <th>SBU</th><th>Date</th><th>Shift Name</th><th>Mill</th><th>Product</th><th>Operator</th><th>Supervisor</th>
+      <th>Breakdown Type</th><th>Breakdown Name</th><th>Reason</th><th>Downtime</th><th>Remarks</th><th>Month</th><th>Year</th>
+    </tr></thead><tbody>${body||'<tr><td colspan="14" class="empty">No breakdown records.</td></tr>'}</tbody></table></div>
+  </div>`;
+}
+
+/* ------------------------------ dashboard ------------------------------- */
+function donut(p,color,cap){p=Math.max(0,Math.min(100,p));
+  return `<svg width="130" height="130" viewBox="0 0 42 42" style="display:block;margin:0 auto">
+    <circle cx="21" cy="21" r="15.9" fill="none" stroke="#e8edf3" stroke-width="6"></circle>
+    <circle cx="21" cy="21" r="15.9" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"
+      stroke-dasharray="${p} ${100-p}" stroke-dashoffset="25"></circle>
+    <text x="21" y="20" text-anchor="middle" font-size="8.5" font-weight="700" fill="#0f2b46">${p.toFixed(1)}%</text>
+    <text x="21" y="26.5" text-anchor="middle" font-size="3.2" fill="#6b7783">${esc(cap||'')}</text></svg>`;
+}
+function barChart(rows){ if(!rows.length)return '<div class="empty">No data.</div>';
+  const max=Math.max.apply(null,rows.map(r=>r.value))||1;
+  return rows.map(r=>`<div style="margin-bottom:10px"><div class="small" style="display:flex;justify-content:space-between"><span>${esc(r.label)}</span><b>${r.display!=null?r.display:num(r.value,1)}</b></div>
+    <div class="bar"><i style="width:${Math.round(r.value*100/max)}%;background:${r.color||'#2E86C1'}"></i></div></div>`).join('');
+}
+function dashboardView(){
+  const p=DB.production;
+  const a=k=>p.length?p.reduce((s,r)=>s+(+r[k]||0),0)/p.length:0;
+  const oeeColor=v=>v>=.75?'#1E8449':v>=.5?'#E67E22':'#C0392B';
+  const byMill=Object.keys(MILLS).map(m=>{ const rs=p.filter(r=>r.mill===m); const o=rs.length?rs.reduce((s,r)=>s+(+r.oee||0),0)/rs.length:0;
+    return {label:m+' OEE',value:o*100,display:pct(o,1),color:oeeColor(o)};});
+  const byShift=SHIFT_NAMES.map(s=>{ const rs=p.filter(r=>r.shiftName===s); const o=rs.length?rs.reduce((x,r)=>x+(+r.oee||0),0)/rs.length:0;
+    return {label:s,value:o*100,display:pct(o,1),color:oeeColor(o)};}).filter(r=>r.value>0);
+  const byNpt={}; p.forEach(r=>NPT_CATS.forEach(c=>{ if(r.npt[c])byNpt[c]=(byNpt[c]||0)+(+r.npt[c]||0); }));
+  const nptRows=Object.keys(byNpt).map(c=>({label:c,value:byNpt[c],display:num(byNpt[c]/60,1)+' h',color:'#C0392B'})).sort((a,b)=>b.value-a.value);
+  const outByMill=Object.keys(MILLS).map(m=>({label:m+' output (MT)',value:p.filter(r=>r.mill===m).reduce((s,r)=>s+(+r.output||0),0),display:num(p.filter(r=>r.mill===m).reduce((s,r)=>s+(+r.output||0),0),0),color:'#2E86C1'}));
+  return `
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="kpi"><div class="v" style="color:${oeeColor(a('oee'))}">${pct(a('oee'),2)}</div><div class="l">Overall OEE</div><div class="s">${p.length} shift records</div></div>
+    <div class="kpi"><div class="v" style="color:#2E86C1">${pct(a('availability'),1)}</div><div class="l">Availability</div><div class="s">actual run ÷ available run</div></div>
+    <div class="kpi"><div class="v" style="color:#17A589">${pct(a('performance'),1)}</div><div class="l">Performance</div><div class="s">output ÷ target</div></div>
+    <div class="kpi"><div class="v" style="color:#8e44ad">${pct(a('quality'),1)}</div><div class="l">Quality</div><div class="s">good ÷ output</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>OEE by Mill</h2><p class="desc">Average OEE per vertical roller mill.</p>${barChart(byMill)}</div>
+    <div class="card"><h2>OEE by Shift</h2><p class="desc">Average OEE per shift group.</p>${barChart(byShift)}</div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>NPT Pareto (hours)</h2><p class="desc">Unplanned downtime grouped by category — biggest losses first.</p>${barChart(nptRows)}</div>
+    <div class="card"><h2>Production Output (MT)</h2><p class="desc">Total actual output per mill.</p>${barChart(outByMill)}
+      <div class="grid g2" style="margin-top:12px">
+        ${donut(a('availability')*100,'#2E86C1','availability')}
+        ${donut(a('oee')*100,oeeColor(a('oee')),'OEE')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ------------------------------- export --------------------------------- */
+function exportCSV(which){
+  let rows=[],head=[];
+  if(which==='production'){
+    head=['SBU','Date','Shift Name','Mill','Product','Operator','Supervisor','Shift','Capacity','Target','Actual Output','Ideal Cycle','Achievement %','Std Speed','Actual Speed','Speed Gap','Gap %','Op Time','Planned DT','Avail Run','Total NPT','Actual Run'].concat(NPT_CATS).concat(['NPT%','Wastage Target %','Wastage MT','Wastage %','Wastage Reason','Good Prod','Availability %','Performance %','Quality %','OEE %','Remarks']);
+    rows=DB.production.map(r=>[r.sbu,fmt(r.date),r.shiftName,r.mill,r.product,r.operator,r.supervisor,r.shift,num(r.capacity,0),num(r.target,0),num(r.output,2),num(r.idealCycle,3),pct(r.achievement,2),num((MILLS[r.mill]||{}).speed,0),num(r.actualSpeed,0),num(r.speedGap,0),pct(r.gapPct,2),num(r.opTime,0),num(r.plannedDT,0),num(r.availableRun,0),num(r.totalNPT,0),num(r.actualRun,0)].concat(NPT_CATS.map(c=>num(r.npt[c],0))).concat([pct(r.nptPct,2),num(r.wastageTarget,1),num(r.wastage,2),pct(r.wastagePct,3),r.wastageReason,num(r.good,2),pct(r.availability,0),pct(r.performance,0),pct(r.quality,0),pct(r.oee,2),r.remarks]));
+  } else {
+    head=['SBU','Date','Shift Name','Mill','Product','Operator','Supervisor','Breakdown Type','Breakdown Name','Reason','Downtime','Remarks','Month','Year'];
+    rows=DB.breakdowns.map(r=>[r.sbu||SBU,fmt(r.date),r.shiftName,r.mill,r.product,r.operator||'',r.supervisor||SUPERVISORS[r.shiftName+'|'+r.mill]||'',r.type,r.name,r.reason,num(r.downtime,0),r.remarks||'',r.month||monthOf(r.date),r.year||yearOf(r.date)]);
+  }
+  const csv=[head].concat(rows).map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='VRM_OEE_'+(which==='production'?'Production_Report':'VRM_Breakdown')+'.csv';a.click();URL.revokeObjectURL(a.href);
+  toast('CSV exported.');
+}
+
+/* ------------------------------- init ----------------------------------- */
+load();
+render();
+autoFill();
+renderBkRows();
+calcPreview();
+</script>
+</body>
+</html>
